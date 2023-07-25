@@ -4,45 +4,48 @@ import QuestionForm from "./QuestionForm";
 import QuestionList from "./QuestionList";
 
 function App() {
+  const [page, setPage] = useState("List");
   const [questions, setQuestions] = useState([]);
-  const [viewQuestions, setViewQuestions] = useState(true);
 
   useEffect(() => {
     fetch("http://localhost:4000/questions")
-      .then((response) => response.json())
-      .then((data) => setQuestions(data))
-      .catch((error) => console.error("Error fetching questions:", error));
+      .then((r) => r.json())
+      .then((questions) => setQuestions(questions));
   }, []);
 
   function handleAddQuestion(newQuestion) {
-    setQuestions([...questions, newQuestion]);
-    setViewQuestions(true); // Show the list of questions after adding a new question
+    setQuestions((prevQuestions) => [...prevQuestions, newQuestion]);
   }
 
-  function handleDeleteQuestion(updatedQuestions) {
-    setQuestions(updatedQuestions);
+  function handleDeleteQuestion(questionId) {
+    setQuestions((prevQuestions) =>
+      prevQuestions.filter((question) => question.id !== questionId)
+    );
   }
 
-  function handleUpdateQuestion(updatedQuestions) {
-    setQuestions(updatedQuestions);
+  function handleUpdateAnswer(questionId, updatedCorrectIndex) {
+    setQuestions((prevQuestions) =>
+      prevQuestions.map((question) =>
+        question.id === questionId
+          ? { ...question, correctIndex: updatedCorrectIndex }
+          : question
+      )
+    );
   }
 
   return (
-    <div>
-      <AdminNavBar
-        onViewQuestions={() => setViewQuestions(true)}
-        onNewQuestion={() => setViewQuestions(false)}
-      />
-      {viewQuestions ? (
+    <main>
+      <AdminNavBar onChangePage={setPage} />
+      {page === "Form" ? (
+        <QuestionForm onAdd={handleAddQuestion} />
+      ) : (
         <QuestionList
           questions={questions}
-          onDeleteQuestion={handleDeleteQuestion}
-          onUpdateQuestion={handleUpdateQuestion}
+          onDelete={handleDeleteQuestion}
+          onUpdateAnswer={handleUpdateAnswer}
         />
-      ) : (
-        <QuestionForm onAddQuestion={handleAddQuestion} />
       )}
-    </div>
+    </main>
   );
 }
 

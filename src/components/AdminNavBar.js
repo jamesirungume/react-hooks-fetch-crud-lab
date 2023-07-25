@@ -1,11 +1,10 @@
-// src/components/AdminNavBar.js
 import React from "react";
 
-function AdminNavBar({ onViewQuestions, onNewQuestion }) {
+function AdminNavBar({ onChangePage }) {
   return (
     <nav>
-      <button onClick={onViewQuestions}>View Questions</button>
-      <button onClick={onNewQuestion}>New Question</button>
+      <button onClick={() => onChangePage("Form")}>New Question</button>
+      <button onClick={() => onChangePage("List")}>View Questions</button>
     </nav>
   );
 }

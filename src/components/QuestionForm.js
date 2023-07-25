@@ -1,36 +1,33 @@
 import React, { useState } from "react";
 
-function QuestionForm({ onAddQuestion }) {
+function QuestionForm({ onAdd }) {
   const [formData, setFormData] = useState({
     prompt: "",
-    answer1: "",
-    answer2: "",
-    answer3: "",
-    answer4: "",
+    answers: ["", "", "", ""],
     correctIndex: 0,
   });
 
   function handleChange(event) {
-    setFormData({
-      ...formData,
-      [event.target.name]: event.target.value,
-    });
+    const { name, value } = event.target;
+
+    if (name === "answers") {
+      const answers = [...formData.answers];
+      answers[parseInt(value, 10)] = event.target.value;
+      setFormData({ ...formData, answers });
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
   }
 
   function handleSubmit(event) {
     event.preventDefault();
-
     const newQuestion = {
       prompt: formData.prompt,
-      answers: [
-        formData.answer1,
-        formData.answer2,
-        formData.answer3,
-        formData.answer4,
-      ],
-      correctIndex: parseInt(formData.correctIndex),
+      answers: formData.answers.filter((answer) => answer !== ""),
+      correctIndex: formData.correctIndex,
     };
 
+    // POST request to add new question
     fetch("http://localhost:4000/questions", {
       method: "POST",
       headers: {
@@ -39,19 +36,24 @@ function QuestionForm({ onAddQuestion }) {
       body: JSON.stringify(newQuestion),
     })
       .then((response) => response.json())
-      .then((data) => {
-        onAddQuestion(data);
+      .then((responseQuestion) => {
+        // Call onAdd to add new question to state
+        onAdd(responseQuestion);
+
+        // Clear form fields after submitting
         setFormData({
           prompt: "",
-          answer1: "",
-          answer2: "",
-          answer3: "",
-          answer4: "",
+          answers: ["", "", "", ""],
           correctIndex: 0,
         });
-      })
-      .catch((error) => console.error("Error creating question:", error));
+      });
   }
+
+  const options = formData.answers.map((answer, index) => (
+    <option key={index} value={index}>
+      {answer}
+    </option>
+  ));
 
   return (
     <section>
@@ -70,8 +72,8 @@ function QuestionForm({ onAddQuestion }) {
           Answer 1:
           <input
             type="text"
-            name="answer1"
-            value={formData.answer1}
+            name="answers"
+            value={formData.answers[0]}
             onChange={handleChange}
           />
         </label>
@@ -79,8 +81,8 @@ function QuestionForm({ onAddQuestion }) {
           Answer 2:
           <input
             type="text"
-            name="answer2"
-            value={formData.answer2}
+            name="answers"
+            value={formData.answers[1]}
             onChange={handleChange}
           />
         </label>
@@ -88,8 +90,8 @@ function QuestionForm({ onAddQuestion }) {
           Answer 3:
           <input
             type="text"
-            name="answer3"
-            value={formData.answer3}
+            name="answers"
+            value={formData.answers[2]}
             onChange={handleChange}
           />
         </label>
@@ -97,8 +99,8 @@ function QuestionForm({ onAddQuestion }) {
           Answer 4:
           <input
             type="text"
-            name="answer4"
-            value={formData.answer4}
+            name="answers"
+            value={formData.answers[3]}
             onChange={handleChange}
           />
         </label>
@@ -109,10 +111,7 @@ function QuestionForm({ onAddQuestion }) {
             value={formData.correctIndex}
             onChange={handleChange}
           >
-            <option value="0">Answer 1</option>
-            <option value="1">Answer 2</option>
-            <option value="2">Answer 3</option>
-            <option value="3">Answer 4</option>
+            {options}
           </select>
         </label>
         <button type="submit">Add Question</button>

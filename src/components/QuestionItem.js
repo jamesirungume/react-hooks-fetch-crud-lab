@@ -1,18 +1,54 @@
-function QuestionItem({ question, onDelete, onCorrectIndexChange }) {
+import React from "react";
+
+function QuestionItem({ question, onDelete }) {
+  const { id, prompt, answers, correctIndex } = question;
+
+  const options = answers.map((answer, index) => (
+    <option key={index} value={index}>
+      {answer}
+    </option>
+  ));
+
+  function handleDelete() {
+    fetch(`http://localhost:4000/questions/${question.id}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }).then(() => {
+      onDelete(id);
+    });
+  }
+
+  function handleCorrectAnswerChange(event) {
+    const newCorrectIndex = parseInt(event.target.value, 10);
+    fetch(`http://localhost:4000/questions/${question.id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ newCorrectIndex }),
+    }).then(() => {
+      onUpdateAnswer(newCorrectIndex)
+      // Update the correctIndex value in the question object
+      // question.correctIndex = newCorrectIndex;
+    });
+  }
+
   return (
     <li>
-      {question.prompt}
-      <button onClick={onDelete}>Delete</button>
-      <select
-        
-        onChange={(e) => onCorrectIndexChange(e.target.value)}
-      >
-        {question.answers.map((answer, index) => (
-          <option key={index} value={index}>
-            {answer}
-          </option>
-        ))}
-      </select>
+      <h4>Question {id}</h4>
+      <h5>Prompt: {prompt}</h5>
+      <label>
+        Correct Answer:
+        <select
+          defaultValue={correctIndex}
+          onChange={handleCorrectAnswerChange}
+        >
+          {options}
+        </select>
+      </label>
+      <button onClick={handleDelete}>Delete Question</button>
     </li>
   );
 }
